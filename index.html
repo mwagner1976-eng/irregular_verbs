@@ -14,8 +14,13 @@
       --dark: #0f172a;
       --success-bg: #dcfce7;
       --success-text: #166534;
+      --success-border: #22c55e;
       --error-bg: #fee2e2;
       --error-text: #991b1b;
+      --error-border: #ef4444;
+      --button: #0f172a;
+      --button-text: #ffffff;
+      --soft: #f8fafc;
     }
 
     * { box-sizing: border-box; }
@@ -29,7 +34,7 @@
     }
 
     .page {
-      max-width: 980px;
+      max-width: 1024px;
       margin: 0 auto;
     }
 
@@ -55,6 +60,10 @@
       line-height: 1.2;
     }
 
+    .header-row {
+      display: block;
+    }
+
     .hint {
       margin-top: 12px;
       color: var(--muted);
@@ -70,11 +79,10 @@
     }
 
     .stat {
-      background: #f8fafc;
+      background: var(--soft);
       border-radius: 16px;
       padding: 12px;
       text-align: center;
-      font-size: 18px;
     }
 
     .stat-label {
@@ -88,6 +96,17 @@
     .stat-value {
       font-size: 24px;
       font-weight: bold;
+    }
+
+    .stat-value.popcorn {
+      font-size: 28px;
+    }
+
+    .header-actions {
+      margin-top: 14px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
     .small-label {
@@ -107,22 +126,39 @@
 
     .tile {
       position: relative;
-      min-height: 104px;
+      min-height: 108px;
       border: 1px solid var(--border);
       border-radius: 16px;
-      background: #f8fafc;
+      background: var(--soft);
       color: var(--text);
       font-size: 20px;
       font-weight: bold;
       padding: 16px 10px;
       cursor: pointer;
       word-break: break-word;
+      transition: transform 0.05s ease, background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .tile:active {
+      transform: scale(0.99);
     }
 
     .tile.selected {
       background: var(--dark);
-      color: white;
+      color: #ffffff;
       border-color: var(--dark);
+    }
+
+    .tile.correct {
+      background: var(--success-bg);
+      color: var(--success-text);
+      border-color: var(--success-border);
+    }
+
+    .tile.wrong {
+      background: var(--error-bg);
+      color: var(--error-text);
+      border-color: var(--error-border);
     }
 
     .tile:disabled {
@@ -137,13 +173,14 @@
       width: 28px;
       height: 28px;
       border-radius: 50%;
-      background: white;
+      background: #ffffff;
       color: var(--dark);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 12px;
       font-weight: bold;
+      border: 1px solid rgba(15, 23, 42, 0.08);
     }
 
     .selected-list {
@@ -156,7 +193,7 @@
 
     .selected-item {
       background: var(--dark);
-      color: white;
+      color: #ffffff;
       padding: 10px 14px;
       border-radius: 14px;
       font-size: 15px;
@@ -187,7 +224,7 @@
 
     .solution {
       margin-top: 14px;
-      background: #f8fafc;
+      background: var(--soft);
       border-radius: 16px;
       padding: 14px 16px;
       line-height: 1.5;
@@ -202,8 +239,36 @@
 
     .result-summary {
       font-size: 20px;
-      line-height: 1.5;
+      line-height: 1.6;
       margin-top: 12px;
+    }
+
+    .button-row {
+      margin-top: 16px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .button {
+      border: 0;
+      background: var(--button);
+      color: var(--button-text);
+      border-radius: 14px;
+      padding: 14px 18px;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .button.secondary {
+      background: #e2e8f0;
+      color: var(--text);
+    }
+
+    .button.warning {
+      background: #b91c1c;
+      color: #ffffff;
     }
 
     @media (min-width: 768px) {
@@ -229,7 +294,7 @@
       }
 
       .tile {
-        min-height: 120px;
+        min-height: 124px;
         font-size: 22px;
       }
 
@@ -264,7 +329,15 @@
             <div class="stat-label">Richtig</div>
             <div class="stat-value" id="correctRounds">0</div>
           </div>
+          <div class="stat">
+            <div class="stat-label">Popkorntüten</div>
+            <div class="stat-value popcorn" id="popcornCount">🍿 0</div>
+          </div>
         </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="button secondary" id="redeemButton">🍿 Einlösen</button>
       </div>
     </div>
 
@@ -371,8 +444,8 @@
     ];
 
     const TOTAL_ROUNDS = 10;
-    const HIGH_SCORE_KEY = 'irregular-verbs-highscore-full-v2';
-    const NEXT_DELAY_MS = 2000;
+    const HIGH_SCORE_KEY = 'irregular-verbs-highscore-v3';
+    const POPCORN_KEY = 'irregular-verbs-popcorn-v1';
 
     function shuffleArray(items) {
       const copy = [...items];
@@ -452,13 +525,15 @@
       const correct = [verb.infinitive, verb.past, verb.participle].map((text, index) => ({
         id: `correct-${index}-${text}-${Math.random()}`,
         text,
-        position: index
+        position: index,
+        isCorrectTile: true
       }));
 
       const wrong = buildWrongOptions(verb).map((text, index) => ({
         id: `wrong-${index}-${text}-${Math.random()}`,
         text,
-        position: null
+        position: null,
+        isCorrectTile: false
       }));
 
       return shuffleArray([...correct, ...wrong]);
@@ -476,6 +551,7 @@
       score: 0,
       correctRounds: 0,
       highscore: Number(localStorage.getItem(HIGH_SCORE_KEY) || 0),
+      popcorn: Number(localStorage.getItem(POPCORN_KEY) || 0),
       gameFinished: false,
       tiles: []
     };
@@ -495,14 +571,7 @@
       document.getElementById('highscore').textContent = state.highscore;
       document.getElementById('round').textContent = `${Math.min(state.roundIndex + 1, TOTAL_ROUNDS)} / ${TOTAL_ROUNDS}`;
       document.getElementById('correctRounds').textContent = state.correctRounds;
-    }
-
-    function tileState(tile) {
-      const selectionIndex = state.selectedIds.indexOf(tile.id);
-      return {
-        selected: selectionIndex !== -1,
-        order: selectionIndex !== -1 ? selectionIndex + 1 : null
-      };
+      document.getElementById('popcornCount').textContent = `🍿 ${state.popcorn}`;
     }
 
     function evaluateRound() {
@@ -514,8 +583,14 @@
       const expectedTexts = [currentVerb().infinitive, currentVerb().past, currentVerb().participle]
         .map(item => item.trim().toLowerCase());
 
-      const correct = clickedTexts.every((text, index) => text === expectedTexts[index]);
-      const roundPoints = correct ? 3 : -1;
+      const selectionResults = clickedTiles.map((tile, index) => ({
+        tileId: tile.id,
+        order: index + 1,
+        isCorrectSelection: clickedTexts[index] === expectedTexts[index]
+      }));
+
+      const correct = selectionResults.every(item => item.isCorrectSelection);
+      const roundPoints = correct ? 3 : -3;
 
       state.score += roundPoints;
       if (correct) state.correctRounds += 1;
@@ -523,6 +598,7 @@
       state.evaluation = {
         correct,
         points: roundPoints,
+        selectionResults,
         solution: [currentVerb().infinitive, currentVerb().past, currentVerb().participle]
       };
     }
@@ -546,10 +622,17 @@
 
       if (isLastRound) {
         state.gameFinished = true;
+
         if (state.score > state.highscore) {
           state.highscore = state.score;
           localStorage.setItem(HIGH_SCORE_KEY, String(state.highscore));
         }
+
+        if (state.correctRounds === TOTAL_ROUNDS) {
+          state.popcorn += 1;
+          localStorage.setItem(POPCORN_KEY, String(state.popcorn));
+        }
+
         render();
         return;
       }
@@ -573,49 +656,108 @@
       render();
     }
 
+    function handleRedeemPopcorn() {
+      if (state.popcorn <= 0) {
+        alert('Es gibt aktuell keine Popkorntüten zum Einlösen.');
+        return;
+      }
+
+      const confirmed = confirm(`Wirklich alle ${state.popcorn} Popkorntüten einlösen und auf 0 setzen?`);
+      if (!confirmed) return;
+
+      state.popcorn = 0;
+      localStorage.setItem(POPCORN_KEY, '0');
+      updateTopStats();
+    }
+
     function renderSelectedList() {
       const items = selectedTiles();
       if (items.length === 0) return '<div class="muted">Noch keine Auswahl</div>';
 
-      return items.map((tile, index) => (
+      return items.map((tile, index) =>
         `<div class="selected-item">${index + 1}. ${escapeHtml(tile.text)}</div>`
-      )).join('');
+      ).join('');
+    }
+
+    function getTileClasses(tile) {
+      const classes = ['tile'];
+      const selectedIndex = state.selectedIds.indexOf(tile.id);
+
+      if (!state.evaluation) {
+        if (selectedIndex !== -1) classes.push('selected');
+        return classes.join(' ');
+      }
+
+      const selectionResult = state.evaluation.selectionResults.find(item => item.tileId === tile.id);
+
+      if (selectionResult) {
+        classes.push(selectionResult.isCorrectSelection ? 'correct' : 'wrong');
+      } else if (tile.isCorrectTile) {
+        classes.push('correct');
+      }
+
+      return classes.join(' ');
+    }
+
+    function getTileBadge(tile) {
+      if (!state.evaluation) {
+        const selectedIndex = state.selectedIds.indexOf(tile.id);
+        if (selectedIndex !== -1) {
+          return `<span class="order-badge">${selectedIndex + 1}</span>`;
+        }
+        return '';
+      }
+
+      const selectionResult = state.evaluation.selectionResults.find(item => item.tileId === tile.id);
+      if (selectionResult) {
+        return `<span class="order-badge">${selectionResult.order}</span>`;
+      }
+
+      if (tile.isCorrectTile) {
+        return `<span class="order-badge">${tile.position + 1}</span>`;
+      }
+
+      return '';
     }
 
     function renderTiles() {
-      return state.tiles.map(tile => {
-        const ts = tileState(tile);
-        return `
-          <button class="tile ${ts.selected ? 'selected' : ''}" data-id="${escapeHtml(tile.id)}" ${ts.selected || state.evaluation ? 'disabled' : ''}>
-            ${ts.order ? `<span class="order-badge">${ts.order}</span>` : ''}
-            <span>${escapeHtml(tile.text)}</span>
-          </button>
-        `;
-      }).join('');
+      return state.tiles.map(tile => `
+        <button
+          class="${getTileClasses(tile)}"
+          data-id="${escapeHtml(tile.id)}"
+          ${state.evaluation ? 'disabled' : ''}
+        >
+          ${getTileBadge(tile)}
+          <span>${escapeHtml(tile.text)}</span>
+        </button>
+      `).join('');
     }
 
-    function render() {
-      updateTopStats();
-      const game = document.getElementById('game');
+    function renderEndScreen() {
+      const earnedPopcorn = state.correctRounds === TOTAL_ROUNDS ? 1 : 0;
 
-      if (state.gameFinished) {
-        game.innerHTML = `
-          <div class="card">
-            <h2>Spiel beendet</h2>
-            <div class="result-summary">
-              <div>Endstand: <strong>${state.score} Punkte</strong></div>
-              <div>Richtig gelöste Verben: <strong>${state.correctRounds} von ${TOTAL_ROUNDS}</strong></div>
-              <div>Bester Wert auf diesem Gerät: <strong>${state.highscore}</strong></div>
-            </div>
-            <button class="tile" style="margin-top:18px; width:100%; background:#0f172a; color:white;" id="restartButton">Neues Spiel starten</button>
+      return `
+        <div class="card">
+          <h2>Spiel beendet</h2>
+          <div class="result-summary">
+            <div>Endstand: <strong>${state.score} Punkte</strong></div>
+            <div>Richtig gelöste Verben: <strong>${state.correctRounds} von ${TOTAL_ROUNDS}</strong></div>
+            <div>Bester Wert auf diesem Gerät: <strong>${state.highscore}</strong></div>
+            ${
+              earnedPopcorn
+                ? `<div style="margin-top:10px;"><strong>Perfekte Runde! Du bekommst 1 🍿</strong></div>`
+                : `<div style="margin-top:10px;">Für eine 🍿 brauchst du <strong>10 von 10 richtig</strong>.</div>`
+            }
           </div>
-        `;
+          <div class="button-row">
+            <button class="button" id="restartButton">Neues Spiel starten</button>
+          </div>
+        </div>
+      `;
+    }
 
-        document.getElementById('restartButton').addEventListener('click', handleRestart);
-        return;
-      }
-
-      game.innerHTML = `
+    function renderGameScreen() {
+      return `
         <div class="card">
           <div class="small-label">Deutsches Verb</div>
           <h2>${escapeHtml(currentVerb().de)}</h2>
@@ -631,39 +773,74 @@
           <div class="selected-list">${renderSelectedList()}</div>
         </div>
 
-        ${state.evaluation ? `
-          <div class="card">
-            <div class="feedback ${state.evaluation.correct ? 'success' : 'error'}">
-              ${state.evaluation.correct
-                ? `Richtig. Du bekommst ${state.evaluation.points} Punkte.`
-                : `Leider falsch. Du bekommst ${state.evaluation.points} Punkt.`}
-            </div>
+        ${
+          state.evaluation
+            ? `
+              <div class="card">
+                <div class="feedback ${state.evaluation.correct ? 'success' : 'error'}">
+                  ${
+                    state.evaluation.correct
+                      ? `Richtig. Du bekommst ${state.evaluation.points} Punkte.`
+                      : `Leider falsch. Du bekommst ${state.evaluation.points} Punkte.`
+                  }
+                </div>
 
-            ${!state.evaluation.correct ? `
-              <div class="solution">
-                <div><strong>Richtige Lösung</strong></div>
-                <div style="margin-top:8px;">${escapeHtml(state.evaluation.solution[0])} — ${escapeHtml(state.evaluation.solution[1])} — ${escapeHtml(state.evaluation.solution[2])}</div>
+                ${
+                  !state.evaluation.correct
+                    ? `
+                      <div class="solution">
+                        <div><strong>Richtige Lösung</strong></div>
+                        <div style="margin-top:8px;">
+                          ${escapeHtml(state.evaluation.solution[0])} — ${escapeHtml(state.evaluation.solution[1])} — ${escapeHtml(state.evaluation.solution[2])}
+                        </div>
+                      </div>
+                    `
+                    : ''
+                }
+
+                <div class="button-row">
+                  <button class="button" id="nextButton">Weiter</button>
+                </div>
               </div>
-            ` : ''}
-          </div>
-        ` : `
-          <div class="card">
-            <div class="rules">Punkte-Regel: <strong>+3</strong> bei komplett richtiger Reihenfolge, <strong>-1</strong> bei einem Fehler.</div>
-          </div>
-        `}
+            `
+            : `
+              <div class="card">
+                <div class="rules">
+                  Punkte-Regel: <strong>+3</strong> bei komplett richtiger Reihenfolge, <strong>-3</strong> bei einem Fehler.
+                  Für <strong>10 von 10 richtig</strong> gibt es <strong>1 🍿</strong>.
+                </div>
+              </div>
+            `
+        }
       `;
+    }
+
+    function render() {
+      updateTopStats();
+      const game = document.getElementById('game');
+
+      if (state.gameFinished) {
+        game.innerHTML = renderEndScreen();
+        document.getElementById('restartButton').addEventListener('click', handleRestart);
+        return;
+      }
+
+      game.innerHTML = renderGameScreen();
 
       document.querySelectorAll('.tile[data-id]').forEach(button => {
         button.addEventListener('click', () => handleTileClick(button.dataset.id));
       });
 
-      if (state.evaluation) {
-        setTimeout(handleNextRound, NEXT_DELAY_MS);
+      const nextButton = document.getElementById('nextButton');
+      if (nextButton) {
+        nextButton.addEventListener('click', handleNextRound);
       }
     }
 
+    document.getElementById('redeemButton').addEventListener('click', handleRedeemPopcorn);
+
     state.tiles = buildTiles(currentVerb());
-    document.getElementById('highscore').textContent = state.highscore;
+    updateTopStats();
     render();
   </script>
 </body>

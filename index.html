@@ -1,140 +1,670 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Irregular Verbs Trainer</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Irregular Verbs Trainer</title>
+  <style>
+    :root {
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #cbd5e1;
+      --dark: #0f172a;
+      --success-bg: #dcfce7;
+      --success-text: #166534;
+      --error-bg: #fee2e2;
+      --error-text: #991b1b;
+    }
 
-<style>
-body {font-family: Arial; background:#f1f5f9; margin:0; padding:16px;}
-.card {background:white; padding:16px; border-radius:16px; margin-bottom:12px;}
-.tiles {display:grid; grid-template-columns:repeat(3,1fr); gap:10px;}
-.tile {
-  padding:18px;
-  border-radius:12px;
-  border:1px solid #ccc;
-  font-weight:bold;
-  font-size:20px;
-  cursor:pointer;
-}
-.tile.selected {background:#0f172a; color:white;}
-.stat {display:inline-block; margin-right:15px;}
-</style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 16px;
+    }
+
+    .page {
+      max-width: 980px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 18px;
+      margin-bottom: 14px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+    }
+
+    h1, h2, p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      font-size: 34px;
+      line-height: 1.2;
+    }
+
+    .hint {
+      margin-top: 12px;
+      color: var(--muted);
+      line-height: 1.4;
+      font-size: 16px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .stat {
+      background: #f8fafc;
+      border-radius: 16px;
+      padding: 12px;
+      text-align: center;
+      font-size: 18px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .small-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .tiles {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .tile {
+      position: relative;
+      min-height: 104px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: #f8fafc;
+      color: var(--text);
+      font-size: 20px;
+      font-weight: bold;
+      padding: 16px 10px;
+      cursor: pointer;
+      word-break: break-word;
+    }
+
+    .tile.selected {
+      background: var(--dark);
+      color: white;
+      border-color: var(--dark);
+    }
+
+    .tile:disabled {
+      opacity: 1;
+      cursor: default;
+    }
+
+    .order-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: white;
+      color: var(--dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .selected-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      min-height: 42px;
+      margin-top: 10px;
+    }
+
+    .selected-item {
+      background: var(--dark);
+      color: white;
+      padding: 10px 14px;
+      border-radius: 14px;
+      font-size: 15px;
+      font-weight: bold;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .feedback {
+      border-radius: 16px;
+      padding: 14px 16px;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .feedback.success {
+      background: var(--success-bg);
+      color: var(--success-text);
+    }
+
+    .feedback.error {
+      background: var(--error-bg);
+      color: var(--error-text);
+    }
+
+    .solution {
+      margin-top: 14px;
+      background: #f8fafc;
+      border-radius: 16px;
+      padding: 14px 16px;
+      line-height: 1.5;
+      font-size: 18px;
+    }
+
+    .rules {
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    .result-summary {
+      font-size: 20px;
+      line-height: 1.5;
+      margin-top: 12px;
+    }
+
+    @media (min-width: 768px) {
+      body {
+        padding: 24px;
+      }
+
+      .header-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        align-items: flex-end;
+      }
+
+      .stats {
+        display: flex;
+        gap: 12px;
+        margin-top: 0;
+      }
+
+      .stat {
+        min-width: 120px;
+      }
+
+      .tile {
+        min-height: 120px;
+        font-size: 22px;
+      }
+
+      h2 {
+        font-size: 42px;
+      }
+    }
+  </style>
 </head>
-
 <body>
+  <div class="page">
+    <div class="card">
+      <div class="header-row">
+        <div>
+          <h1>Irregular Verbs Trainer</h1>
+          <p class="hint">Wähle die drei englischen Formen in der richtigen Reihenfolge.</p>
+        </div>
+        <div class="stats">
+          <div class="stat">
+            <div class="stat-label">Punkte</div>
+            <div class="stat-value" id="score">0</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Highscore</div>
+            <div class="stat-value" id="highscore">0</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Runde</div>
+            <div class="stat-value" id="round">1 / 10</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Richtig</div>
+            <div class="stat-value" id="correctRounds">0</div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-<div class="card">
-<h2 id="verb"></h2>
-<div class="stat">Punkte: <span id="score">0</span></div>
-<div class="stat">Highscore: <span id="highscore">0</span></div>
-<div class="stat">Runde: <span id="round">1</span>/10</div>
-</div>
+    <div id="game"></div>
+  </div>
 
-<div class="tiles" id="tiles"></div>
+  <script>
+    const VERBS = [
+      { de: 'sein', infinitive: 'be', past: 'was', participle: 'been' },
+      { de: 'schlagen; besiegen', infinitive: 'beat', past: 'beat', participle: 'beaten' },
+      { de: 'werden', infinitive: 'become', past: 'became', participle: 'become' },
+      { de: 'beginnen; anfangen', infinitive: 'begin', past: 'began', participle: 'begun' },
+      { de: 'sich bücken; sich beugen', infinitive: 'bend', past: 'bent', participle: 'bent' },
+      { de: 'beißen', infinitive: 'bite', past: 'bit', participle: 'bitten' },
+      { de: 'ausblasen', infinitive: 'blow', past: 'blew', participle: 'blown' },
+      { de: 'brechen; zerbrechen', infinitive: 'break', past: 'broke', participle: 'broken' },
+      { de: '(mit-, her)bringen', infinitive: 'bring', past: 'brought', participle: 'brought' },
+      { de: 'bauen', infinitive: 'build', past: 'built', participle: 'built' },
+      { de: 'in Tränen ausbrechen', infinitive: 'burst into tears', past: 'burst', participle: 'burst' },
+      { de: 'kaufen', infinitive: 'buy', past: 'bought', participle: 'bought' },
+      { de: 'fangen', infinitive: 'catch', past: 'caught', participle: 'caught' },
+      { de: 'aussuchen; (aus)wählen; sich aussuchen', infinitive: 'choose', past: 'chose', participle: 'chosen' },
+      { de: 'kommen', infinitive: 'come', past: 'came', participle: 'come' },
+      { de: 'kosten', infinitive: 'cost', past: 'cost', participle: 'cost' },
+      { de: 'schneiden', infinitive: 'cut', past: 'cut', participle: 'cut' },
+      { de: 'graben', infinitive: 'dig', past: 'dug', participle: 'dug' },
+      { de: 'tun; machen', infinitive: 'do', past: 'did', participle: 'done' },
+      { de: 'zeichnen', infinitive: 'draw', past: 'drew', participle: 'drawn' },
+      { de: '(mit dem Auto) fahren', infinitive: 'drive', past: 'drove', participle: 'driven' },
+      { de: 'trinken', infinitive: 'drink', past: 'drank', participle: 'drunk' },
+      { de: 'essen', infinitive: 'eat', past: 'ate', participle: 'eaten' },
+      { de: 'fallen; stürzen; hinfallen', infinitive: 'fall', past: 'fell', participle: 'fallen' },
+      { de: 'füttern; sich ernähren', infinitive: 'feed', past: 'fed', participle: 'fed' },
+      { de: 'fühlen; sich fühlen', infinitive: 'feel', past: 'felt', participle: 'felt' },
+      { de: '(be)kämpfen', infinitive: 'fight', past: 'fought', participle: 'fought' },
+      { de: 'finden', infinitive: 'find', past: 'found', participle: 'found' },
+      { de: 'fliegen', infinitive: 'fly', past: 'flew', participle: 'flown' },
+      { de: 'vergessen', infinitive: 'forget', past: 'forgot', participle: 'forgotten' },
+      { de: '(ge)frieren; zufrieren; einfrieren', infinitive: 'freeze', past: 'froze', participle: 'frozen' },
+      { de: 'bekommen; holen; werden; gelangen', infinitive: 'get', past: 'got', participle: 'got' },
+      { de: 'geben', infinitive: 'give', past: 'gave', participle: 'given' },
+      { de: 'gehen', infinitive: 'go', past: 'went', participle: 'gone' },
+      { de: 'wachsen; anbauen; anpflanzen', infinitive: 'grow', past: 'grew', participle: 'grown' },
+      { de: 'hängen', infinitive: 'hang', past: 'hung', participle: 'hung' },
+      { de: 'haben', infinitive: 'have', past: 'had', participle: 'had' },
+      { de: 'hören', infinitive: 'hear', past: 'heard', participle: 'heard' },
+      { de: 'verstecken; sich verstecken', infinitive: 'hide', past: 'hid', participle: 'hidden' },
+      { de: 'schlagen', infinitive: 'hit', past: 'hit', participle: 'hit' },
+      { de: 'halten; abhalten', infinitive: 'hold', past: 'held', participle: 'held' },
+      { de: 'schmerzen; wehtun; verletzen', infinitive: 'hurt', past: 'hurt', participle: 'hurt' },
+      { de: 'behalten; aufheben; aufsparen; aufbewahren', infinitive: 'keep', past: 'kept', participle: 'kept' },
+      { de: 'knien', infinitive: 'kneel', past: 'knelt', participle: 'knelt' },
+      { de: 'wissen; kennen', infinitive: 'know', past: 'knew', participle: 'known' },
+      { de: 'führen; leiten', infinitive: 'lead', past: 'led', participle: 'led' },
+      { de: '(weg)gehen; abfahren; (zurück)lassen; verlassen', infinitive: 'leave', past: 'left', participle: 'left' },
+      { de: 'leihen', infinitive: 'lend', past: 'lent', participle: 'lent' },
+      { de: 'lassen', infinitive: 'let', past: 'let', participle: 'let' },
+      { de: 'liegen', infinitive: 'lie', past: 'lay', participle: 'lain' },
+      { de: 'anzünden', infinitive: 'light', past: 'lit', participle: 'lit' },
+      { de: 'verlieren', infinitive: 'lose', past: 'lost', participle: 'lost' },
+      { de: 'machen; herstellen', infinitive: 'make', past: 'made', participle: 'made' },
+      { de: 'bedeuten; meinen', infinitive: 'mean', past: 'meant', participle: 'meant' },
+      { de: 'treffen; sich treffen; kennenlernen', infinitive: 'meet', past: 'met', participle: 'met' },
+      { de: 'bezahlen', infinitive: 'pay', past: 'paid', participle: 'paid' },
+      { de: '(etwas wohin) tun; legen; stellen', infinitive: 'put', past: 'put', participle: 'put' },
+      { de: 'lesen', infinitive: 'read', past: 'read', participle: 'read' },
+      { de: 'reiten; fahren', infinitive: 'ride', past: 'rode', participle: 'ridden' },
+      { de: 'klingeln; läuten', infinitive: 'ring', past: 'rang', participle: 'rung' },
+      { de: '(an)steigen; aufsteigen; (sich) erhöhen', infinitive: 'rise', past: 'rose', participle: 'risen' },
+      { de: 'rennen; laufen; leiten; führen', infinitive: 'run', past: 'ran', participle: 'run' },
+      { de: 'sagen', infinitive: 'say', past: 'said', participle: 'said' },
+      { de: 'sehen', infinitive: 'see', past: 'saw', participle: 'seen' },
+      { de: 'verkaufen', infinitive: 'sell', past: 'sold', participle: 'sold' },
+      { de: 'schicken; senden', infinitive: 'send', past: 'sent', participle: 'sent' },
+      { de: 'etwas errichten; aufbauen; etwas arrangieren', infinitive: 'set up', past: 'set', participle: 'set' },
+      { de: 'schütteln', infinitive: 'shake', past: 'shook', participle: 'shaken' },
+      { de: 'scheinen', infinitive: 'shine', past: 'shone', participle: 'shone' },
+      { de: 'schießen; erschießen', infinitive: 'shoot', past: 'shot', participle: 'shot' },
+      { de: 'singen', infinitive: 'sing', past: 'sang', participle: 'sung' },
+      { de: 'sitzen; sich setzen', infinitive: 'sit', past: 'sat', participle: 'sat' },
+      { de: 'schlafen', infinitive: 'sleep', past: 'slept', participle: 'slept' },
+      { de: 'sprechen', infinitive: 'speak', past: 'spoke', participle: 'spoken' },
+      { de: '(Zeit) verbringen; (Geld) ausgeben', infinitive: 'spend', past: 'spent', participle: 'spent' },
+      { de: 'sich (im Kreis) drehen; herumwirbeln', infinitive: 'spin around', past: 'spun', participle: 'spun' },
+      { de: 'ausbreiten; sich ausbreiten; verbreiten', infinitive: 'spread', past: 'spread', participle: 'spread' },
+      { de: 'stehen; sich (hin)stellen', infinitive: 'stand', past: 'stood', participle: 'stood' },
+      { de: 'stehlen', infinitive: 'steal', past: 'stole', participle: 'stolen' },
+      { de: 'stecken', infinitive: 'stick', past: 'stuck', participle: 'stuck' },
+      { de: 'schwören', infinitive: 'swear', past: 'swore', participle: 'sworn' },
+      { de: 'schwimmen', infinitive: 'swim', past: 'swam', participle: 'swum' },
+      { de: 'schwingen', infinitive: 'swing', past: 'swung', participle: 'swung' },
+      { de: '(mit)nehmen; (weg-, hin)bringen; dauern', infinitive: 'take', past: 'took', participle: 'taken' },
+      { de: 'unterrichten; lehren', infinitive: 'teach', past: 'taught', participle: 'taught' },
+      { de: 'abreißen', infinitive: 'tear down', past: 'tore', participle: 'torn' },
+      { de: 'erzählen; berichten', infinitive: 'tell', past: 'told', participle: 'told' },
+      { de: 'denken; glauben', infinitive: 'think', past: 'thought', participle: 'thought' },
+      { de: 'werfen', infinitive: 'throw', past: 'threw', participle: 'thrown' },
+      { de: 'treten', infinitive: 'tread', past: 'trod', participle: 'trodden' },
+      { de: 'verstehen', infinitive: 'understand', past: 'understood', participle: 'understood' },
+      { de: 'aufwachen; (auf)wecken', infinitive: 'wake up', past: 'woke up', participle: 'woken up' },
+      { de: 'tragen (Kleidung)', infinitive: 'wear', past: 'wore', participle: 'worn' },
+      { de: 'gewinnen', infinitive: 'win', past: 'won', participle: 'won' },
+      { de: 'schreiben', infinitive: 'write', past: 'wrote', participle: 'written' }
+    ];
 
-<div class="card" id="result"></div>
+    const TOTAL_ROUNDS = 10;
+    const HIGH_SCORE_KEY = 'irregular-verbs-highscore-full-v2';
+    const NEXT_DELAY_MS = 2000;
 
-<script>
-const VERBS = [
-{de:"sein", i:"be", p:"was", pp:"been"},
-{de:"gehen", i:"go", p:"went", pp:"gone"},
-{de:"sehen", i:"see", p:"saw", pp:"seen"},
-{de:"nehmen", i:"take", p:"took", pp:"taken"},
-{de:"kommen", i:"come", p:"came", pp:"come"},
-{de:"finden", i:"find", p:"found", pp:"found"},
-{de:"denken", i:"think", p:"thought", pp:"thought"},
-{de:"machen", i:"make", p:"made", pp:"made"},
-{de:"geben", i:"give", p:"gave", pp:"given"},
-{de:"wissen", i:"know", p:"knew", pp:"known"},
-{de:"kaufen", i:"buy", p:"bought", pp:"bought"},
-{de:"bringen", i:"bring", p:"brought", pp:"brought"},
-{de:"fühlen", i:"feel", p:"felt", pp:"felt"},
-{de:"lassen", i:"let", p:"let", pp:"let"},
-{de:"lesen", i:"read", p:"read", pp:"read"},
-{de:"sprechen", i:"speak", p:"spoke", pp:"spoken"},
-{de:"essen", i:"eat", p:"ate", pp:"eaten"},
-{de:"trinken", i:"drink", p:"drank", pp:"drunk"},
-{de:"laufen", i:"run", p:"ran", pp:"run"},
-{de:"fahren", i:"drive", p:"drove", pp:"driven"}
-];
+    function shuffleArray(items) {
+      const copy = [...items];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
 
-const TOTAL_ROUNDS = 10;
-let game = [];
-let round = 0;
-let score = 0;
-let selected = [];
+    function escapeHtml(text) {
+      return text
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
 
-let high = localStorage.getItem("hs") || 0;
-document.getElementById("highscore").innerText = high;
+    function mutateWord(word, variant = 0) {
+      if (!word) return word;
 
-function shuffle(a){return [...a].sort(()=>Math.random()-0.5)}
+      const parts = word.split(' ');
+      const main = parts[0];
+      const rest = parts.slice(1).join(' ');
 
-function typicalMistake(w){
-if(w.endsWith("e")) return w+"d";
-return w+"ed";
-}
+      let mutated = main;
 
-function buildOptions(v){
-let pool = VERBS.flatMap(x=>[x.i,x.p,x.pp]);
+      if (variant % 6 === 0) mutated = `${main}ed`;
+      if (variant % 6 === 1) mutated = `${main}d`;
+      if (variant % 6 === 2) mutated = `${main}${main.slice(-1)}`;
+      if (variant % 6 === 3) mutated = main.replace(/[aeiou]/g, 'e');
+      if (variant % 6 === 4) mutated = main.length > 3 ? `${main.slice(0, -1)}ed` : `${main}ed`;
+      if (variant % 6 === 5) mutated = `${main}en`;
 
-let similar = shuffle(pool).filter(x=>![v.i,v.p,v.pp].includes(x)).slice(0,3);
-let mistakes = [typicalMistake(v.i), typicalMistake(v.p), typicalMistake(v.pp)];
+      mutated = mutated.toLowerCase();
+      if (mutated === word.toLowerCase()) mutated = `${main}x`.toLowerCase();
 
-return shuffle([v.i,v.p,v.pp,...similar,...mistakes]).slice(0,9);
-}
+      return rest ? `${mutated} ${rest}` : mutated;
+    }
 
-function next(){
-if(round>=TOTAL_ROUNDS){
-if(score>high){localStorage.setItem("hs",score);}
-alert("Fertig! Punkte: "+score);
-location.reload();
-return;
-}
+    function buildWrongOptions(verb) {
+      const realForms = [verb.infinitive, verb.past, verb.participle];
+      const pool = VERBS.flatMap(item => [item.infinitive, item.past, item.participle]);
+      const uniqueReal = new Set(realForms.map(item => item.toLowerCase()));
 
-selected=[];
-document.getElementById("result").innerHTML="";
+      const typicalMistakes = realForms.map((form, index) => mutateWord(form, index));
 
-let v = game[round];
-document.getElementById("verb").innerText = v.de;
-document.getElementById("round").innerText = round+1;
+      const similarReal = shuffleArray(
+        pool.filter(item => !uniqueReal.has(item.toLowerCase()))
+      ).slice(0, 3);
 
-let options = buildOptions(v);
+      const candidates = [...typicalMistakes, ...similarReal]
+        .filter((item, index, array) => {
+          const lowered = item.toLowerCase();
+          return !uniqueReal.has(lowered) &&
+                 array.findIndex(x => x.toLowerCase() === lowered) === index;
+        })
+        .slice(0, 6);
 
-let html="";
-options.forEach(o=>{
-html+=`<button class="tile" onclick="pick(this,'${o}')">${o}</button>`;
-});
+      let fillerIndex = 10;
+      while (candidates.length < 6) {
+        const fallback = mutateWord(verb.infinitive, fillerIndex);
+        if (
+          !uniqueReal.has(fallback.toLowerCase()) &&
+          !candidates.some(item => item.toLowerCase() === fallback.toLowerCase())
+        ) {
+          candidates.push(fallback);
+        }
+        fillerIndex += 1;
+      }
 
-document.getElementById("tiles").innerHTML = html;
-}
+      return candidates;
+    }
 
-function pick(btn,val){
-if(selected.length>=3) return;
-btn.classList.add("selected");
-selected.push(val);
+    function buildTiles(verb) {
+      const correct = [verb.infinitive, verb.past, verb.participle].map((text, index) => ({
+        id: `correct-${index}-${text}-${Math.random()}`,
+        text,
+        position: index
+      }));
 
-if(selected.length===3){
-let v = game[round];
-let correct = [v.i,v.p,v.pp].join()==selected.join();
+      const wrong = buildWrongOptions(verb).map((text, index) => ({
+        id: `wrong-${index}-${text}-${Math.random()}`,
+        text,
+        position: null
+      }));
 
-if(correct){
-score+=3;
-document.getElementById("result").innerHTML="✅ Richtig (+3)";
-}else{
-score-=1;
-document.getElementById("result").innerHTML="❌ "+v.i+" - "+v.p+" - "+v.pp;
-}
+      return shuffleArray([...correct, ...wrong]);
+    }
 
-document.getElementById("score").innerText = score;
-round++;
-setTimeout(next,2000);
-}
-}
+    function createGameSet() {
+      return shuffleArray(VERBS).slice(0, TOTAL_ROUNDS);
+    }
 
-game = shuffle(VERBS).slice(0,TOTAL_ROUNDS);
-next();
-</script>
+    const state = {
+      gameVerbs: createGameSet(),
+      roundIndex: 0,
+      selectedIds: [],
+      evaluation: null,
+      score: 0,
+      correctRounds: 0,
+      highscore: Number(localStorage.getItem(HIGH_SCORE_KEY) || 0),
+      gameFinished: false,
+      tiles: []
+    };
 
+    function currentVerb() {
+      return state.gameVerbs[state.roundIndex];
+    }
+
+    function selectedTiles() {
+      return state.selectedIds
+        .map(id => state.tiles.find(tile => tile.id === id))
+        .filter(Boolean);
+    }
+
+    function updateTopStats() {
+      document.getElementById('score').textContent = state.score;
+      document.getElementById('highscore').textContent = state.highscore;
+      document.getElementById('round').textContent = `${Math.min(state.roundIndex + 1, TOTAL_ROUNDS)} / ${TOTAL_ROUNDS}`;
+      document.getElementById('correctRounds').textContent = state.correctRounds;
+    }
+
+    function tileState(tile) {
+      const selectionIndex = state.selectedIds.indexOf(tile.id);
+      return {
+        selected: selectionIndex !== -1,
+        order: selectionIndex !== -1 ? selectionIndex + 1 : null
+      };
+    }
+
+    function evaluateRound() {
+      const clickedTiles = state.selectedIds
+        .map(id => state.tiles.find(item => item.id === id))
+        .filter(Boolean);
+
+      const clickedTexts = clickedTiles.map(item => item.text.trim().toLowerCase());
+      const expectedTexts = [currentVerb().infinitive, currentVerb().past, currentVerb().participle]
+        .map(item => item.trim().toLowerCase());
+
+      const correct = clickedTexts.every((text, index) => text === expectedTexts[index]);
+      const roundPoints = correct ? 3 : -1;
+
+      state.score += roundPoints;
+      if (correct) state.correctRounds += 1;
+
+      state.evaluation = {
+        correct,
+        points: roundPoints,
+        solution: [currentVerb().infinitive, currentVerb().past, currentVerb().participle]
+      };
+    }
+
+    function handleTileClick(id) {
+      if (state.gameFinished || state.evaluation || state.selectedIds.includes(id) || state.selectedIds.length >= 3) {
+        return;
+      }
+
+      state.selectedIds.push(id);
+
+      if (state.selectedIds.length === 3) {
+        evaluateRound();
+      }
+
+      render();
+    }
+
+    function handleNextRound() {
+      const isLastRound = state.roundIndex >= TOTAL_ROUNDS - 1;
+
+      if (isLastRound) {
+        state.gameFinished = true;
+        if (state.score > state.highscore) {
+          state.highscore = state.score;
+          localStorage.setItem(HIGH_SCORE_KEY, String(state.highscore));
+        }
+        render();
+        return;
+      }
+
+      state.roundIndex += 1;
+      state.selectedIds = [];
+      state.evaluation = null;
+      state.tiles = buildTiles(currentVerb());
+      render();
+    }
+
+    function handleRestart() {
+      state.gameVerbs = createGameSet();
+      state.roundIndex = 0;
+      state.selectedIds = [];
+      state.evaluation = null;
+      state.score = 0;
+      state.correctRounds = 0;
+      state.gameFinished = false;
+      state.tiles = buildTiles(currentVerb());
+      render();
+    }
+
+    function renderSelectedList() {
+      const items = selectedTiles();
+      if (items.length === 0) return '<div class="muted">Noch keine Auswahl</div>';
+
+      return items.map((tile, index) => (
+        `<div class="selected-item">${index + 1}. ${escapeHtml(tile.text)}</div>`
+      )).join('');
+    }
+
+    function renderTiles() {
+      return state.tiles.map(tile => {
+        const ts = tileState(tile);
+        return `
+          <button class="tile ${ts.selected ? 'selected' : ''}" data-id="${escapeHtml(tile.id)}" ${ts.selected || state.evaluation ? 'disabled' : ''}>
+            ${ts.order ? `<span class="order-badge">${ts.order}</span>` : ''}
+            <span>${escapeHtml(tile.text)}</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function render() {
+      updateTopStats();
+      const game = document.getElementById('game');
+
+      if (state.gameFinished) {
+        game.innerHTML = `
+          <div class="card">
+            <h2>Spiel beendet</h2>
+            <div class="result-summary">
+              <div>Endstand: <strong>${state.score} Punkte</strong></div>
+              <div>Richtig gelöste Verben: <strong>${state.correctRounds} von ${TOTAL_ROUNDS}</strong></div>
+              <div>Bester Wert auf diesem Gerät: <strong>${state.highscore}</strong></div>
+            </div>
+            <button class="tile" style="margin-top:18px; width:100%; background:#0f172a; color:white;" id="restartButton">Neues Spiel starten</button>
+          </div>
+        `;
+
+        document.getElementById('restartButton').addEventListener('click', handleRestart);
+        return;
+      }
+
+      game.innerHTML = `
+        <div class="card">
+          <div class="small-label">Deutsches Verb</div>
+          <h2>${escapeHtml(currentVerb().de)}</h2>
+          <p class="hint">Klicke in dieser Reihenfolge: <strong>Infinitive → Simple Past → Past Participle</strong></p>
+        </div>
+
+        <div class="card">
+          <div class="tiles">${renderTiles()}</div>
+        </div>
+
+        <div class="card">
+          <div class="small-label" style="text-transform:none; letter-spacing:0;">Ausgewählt</div>
+          <div class="selected-list">${renderSelectedList()}</div>
+        </div>
+
+        ${state.evaluation ? `
+          <div class="card">
+            <div class="feedback ${state.evaluation.correct ? 'success' : 'error'}">
+              ${state.evaluation.correct
+                ? `Richtig. Du bekommst ${state.evaluation.points} Punkte.`
+                : `Leider falsch. Du bekommst ${state.evaluation.points} Punkt.`}
+            </div>
+
+            ${!state.evaluation.correct ? `
+              <div class="solution">
+                <div><strong>Richtige Lösung</strong></div>
+                <div style="margin-top:8px;">${escapeHtml(state.evaluation.solution[0])} — ${escapeHtml(state.evaluation.solution[1])} — ${escapeHtml(state.evaluation.solution[2])}</div>
+              </div>
+            ` : ''}
+          </div>
+        ` : `
+          <div class="card">
+            <div class="rules">Punkte-Regel: <strong>+3</strong> bei komplett richtiger Reihenfolge, <strong>-1</strong> bei einem Fehler.</div>
+          </div>
+        `}
+      `;
+
+      document.querySelectorAll('.tile[data-id]').forEach(button => {
+        button.addEventListener('click', () => handleTileClick(button.dataset.id));
+      });
+
+      if (state.evaluation) {
+        setTimeout(handleNextRound, NEXT_DELAY_MS);
+      }
+    }
+
+    state.tiles = buildTiles(currentVerb());
+    document.getElementById('highscore').textContent = state.highscore;
+    render();
+  </script>
 </body>
 </html>
